@@ -1,0 +1,26 @@
+groups:
+  - name: service_alerts
+    rules:
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{code=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, sum(rate(grpc_server_handling_seconds_bucket[5m])) by (le, method)) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High gRPC latency detected"

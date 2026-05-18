@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package user;
+option go_package = "github.com/music-streaming/proto/user";
+
+service UserService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc GetUser(GetUserRequest) returns (User);
+  rpc UpdateUser(UpdateUserRequest) returns (User);
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
+  rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse);
+  rpc ForgotPassword(ForgotPasswordRequest) returns (ForgotPasswordResponse);
+  rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse);
+  rpc GetUserStats(GetUserStatsRequest) returns (UserStats);
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string username = 3;
+}
+
+message RegisterResponse {
+  string user_id = 1;
+  string message = 2;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string token = 1;
+  string user_id = 2;
+  string refresh_token = 3;
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  string username = 3;
+  string role = 4;
+  bool verified = 5;
+  int64 created_at = 6;
+}
+
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message UpdateUserRequest {
+  string user_id = 1;
+  string username = 2;
+  string email = 3;
+}
+
+message DeleteUserRequest {
+  string user_id = 1;
+}
+
+message DeleteUserResponse {
+  string message = 1;
+}
+
+message ValidateTokenRequest {
+  string token = 1;
+}
+
+message ValidateTokenResponse {
+  string user_id = 1;
+  bool valid = 2;
+}
+
+message LogoutRequest {
+  string token = 1;
+}
+
+message LogoutResponse {
+  string message = 1;
+}
+
+message ChangePasswordRequest {
+  string user_id = 1;
+  string old_password = 2;
+  string new_password = 3;
+}
+
+message ChangePasswordResponse {
+  string message = 1;
+}
+
+message VerifyEmailRequest {
+  string user_id = 1;
+  string token = 2;
+}
+
+message VerifyEmailResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ForgotPasswordRequest {
+  string email = 1;
+}
+
+message ForgotPasswordResponse {
+  string message = 1;
+}
+
+message ResetPasswordRequest {
+  string token = 1;
+  string new_password = 2;
+}
+
+message ResetPasswordResponse {
+  string message = 1;
+}
+
+message GetUserStatsRequest {
+  string user_id = 1;
+}
+
+message UserStats {
+  int32 total_playlists = 1;
+  int32 total_tracks_uploaded = 2;
+  int32 total_plays = 3;
+  int64 subscription_days_left = 4;
+}

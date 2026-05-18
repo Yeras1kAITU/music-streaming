@@ -1,0 +1,176 @@
+syntax = "proto3";
+
+package music;
+option go_package = "github.com/music-streaming/proto/music";
+
+service MusicService {
+  rpc UploadTrack(UploadTrackRequest) returns (UploadTrackResponse);
+  rpc GetTrack(GetTrackRequest) returns (Track);
+  rpc ListTracks(ListTracksRequest) returns (ListTracksResponse);
+  rpc SearchTracks(SearchTracksRequest) returns (SearchTracksResponse);
+  rpc CreatePlaylist(CreatePlaylistRequest) returns (Playlist);
+  rpc AddToPlaylist(AddToPlaylistRequest) returns (Playlist);
+  rpc RemoveFromPlaylist(RemoveFromPlaylistRequest) returns (Playlist);
+  rpc GetPlaylist(GetPlaylistRequest) returns (Playlist);
+  rpc GetUserPlaylists(GetUserPlaylistsRequest) returns (GetUserPlaylistsResponse);
+  rpc StreamTrack(StreamTrackRequest) returns (stream TrackChunk);
+  rpc GetRecommendations(GetRecommendationsRequest) returns (RecommendationsResponse);
+  rpc LikeTrack(LikeTrackRequest) returns (LikeTrackResponse);
+  rpc GetLikedTracks(GetLikedTracksRequest) returns (GetLikedTracksResponse);
+  rpc AddToQueue(AddToQueueRequest) returns (AddToQueueResponse);
+  rpc GetQueue(GetQueueRequest) returns (GetQueueResponse);
+}
+
+message UploadTrackRequest {
+  string user_id = 1;
+  string title = 2;
+  string artist = 3;
+  string album = 4;
+  int32 duration = 5;
+  bytes audio_data = 6;
+  string genre = 7;
+}
+
+message UploadTrackResponse {
+  string track_id = 1;
+  string message = 2;
+}
+
+message Track {
+  string id = 1;
+  string user_id = 2;
+  string title = 3;
+  string artist = 4;
+  string album = 5;
+  int32 duration = 6;
+  string url = 7;
+  int32 plays = 8;
+  int32 likes = 9;
+  string genre = 10;
+  int64 created_at = 11;
+}
+
+message GetTrackRequest {
+  string track_id = 1;
+}
+
+message ListTracksRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+message ListTracksResponse {
+  repeated Track tracks = 1;
+  int32 total = 2;
+}
+
+message SearchTracksRequest {
+  string query = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+message SearchTracksResponse {
+  repeated Track tracks = 1;
+  int32 total = 2;
+}
+
+message CreatePlaylistRequest {
+  string user_id = 1;
+  string name = 2;
+  string description = 3;
+  bool is_public = 4;
+}
+
+message Playlist {
+  string id = 1;
+  string user_id = 2;
+  string name = 3;
+  string description = 4;
+  repeated Track tracks = 5;
+  bool is_public = 6;
+  int64 created_at = 7;
+  int32 track_count = 8;
+}
+
+message AddToPlaylistRequest {
+  string playlist_id = 1;
+  string track_id = 2;
+  string user_id = 3;
+}
+
+message RemoveFromPlaylistRequest {
+  string playlist_id = 1;
+  string track_id = 2;
+  string user_id = 3;
+}
+
+message GetPlaylistRequest {
+  string playlist_id = 1;
+  string user_id = 2;
+}
+
+message GetUserPlaylistsRequest {
+  string user_id = 1;
+}
+
+message GetUserPlaylistsResponse {
+  repeated Playlist playlists = 1;
+}
+
+message StreamTrackRequest {
+  string track_id = 1;
+  string user_id = 2;
+}
+
+message TrackChunk {
+  bytes data = 1;
+  int64 position = 2;
+}
+
+message GetRecommendationsRequest {
+  string user_id = 1;
+  int32 limit = 2;
+}
+
+message RecommendationsResponse {
+  repeated Track tracks = 1;
+}
+
+message LikeTrackRequest {
+  string user_id = 1;
+  string track_id = 2;
+}
+
+message LikeTrackResponse {
+  bool liked = 1;
+  int32 total_likes = 2;
+}
+
+message GetLikedTracksRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+message GetLikedTracksResponse {
+  repeated Track tracks = 1;
+  int32 total = 2;
+}
+
+message AddToQueueRequest {
+  string user_id = 1;
+  string track_id = 2;
+}
+
+message AddToQueueResponse {
+  int32 position = 1;
+}
+
+message GetQueueRequest {
+  string user_id = 1;
+}
+
+message GetQueueResponse {
+  repeated Track tracks = 1;
+}

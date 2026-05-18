@@ -1,0 +1,243 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: music_user
+      POSTGRES_PASSWORD: music_password
+      POSTGRES_DB: music_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U music_user -d music_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - music-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - music-network
+
+  nats:
+    image: nats:2-alpine
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command: -js
+    healthcheck:
+      test: ["CMD", "nats-server", "--help"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - music-network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    ports:
+      - "50051:50051"
+      - "9091:9090"  # Metrics port
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: music_user
+      DB_PASSWORD: music_password
+      DB_NAME: music_db
+      REDIS_ADDR: redis:6379
+      NATS_URL: nats://nats:4222
+      GRPC_PORT: 50051
+      JWT_SECRET: ${JWT_SECRET:-test-secret}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    networks:
+      - music-network
+    restart: unless-stopped
+
+  music-service:
+    build:
+      context: .
+      dockerfile: music-service/Dockerfile
+    ports:
+      - "50052:50052"
+      - "9092:9090"  # Changed to 9092
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: music_user
+      DB_PASSWORD: music_password
+      DB_NAME: music_db
+      REDIS_ADDR: redis:6379
+      NATS_URL: nats://nats:4222
+      GRPC_PORT: 50052
+      UPLOAD_PATH: /uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    volumes:
+      - music_uploads:/uploads
+    networks:
+      - music-network
+    restart: unless-stopped
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: payment-service/Dockerfile
+    ports:
+      - "50053:50053"
+      - "9093:9090"  # Changed to 9093
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: music_user
+      DB_PASSWORD: music_password
+      DB_NAME: music_db
+      REDIS_ADDR: redis:6379
+      NATS_URL: nats://nats:4222
+      GRPC_PORT: 50053
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    networks:
+      - music-network
+    restart: unless-stopped
+
+  event-subscriber:
+    build:
+      context: .
+      dockerfile: event-subscriber/Dockerfile
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: music_user
+      DB_PASSWORD: music_password
+      DB_NAME: music_db
+      NATS_URL: nats://nats:4222
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    networks:
+      - music-network
+    restart: unless-stopped
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      USER_SERVICE_ADDR: user-service:50051
+      MUSIC_SERVICE_ADDR: music-service:50052
+      PAYMENT_SERVICE_ADDR: payment-service:50053
+      REDIS_ADDR: redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      user-service:
+        condition: service_started
+      music-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+    networks:
+      - music-network
+    restart: unless-stopped
+
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "7275:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    networks:
+      - music-network
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+    networks:
+      - music-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.0.0
+    ports:
+      - "8081:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - music-network
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.48
+    ports:
+      - "16686:16686"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "14268:14268"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    networks:
+      - music-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  music_uploads:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  music-network:
+    driver: bridge

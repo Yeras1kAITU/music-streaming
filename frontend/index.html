@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MusicStream - Premium Music Streaming</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo">
+            <span class="logo-icon">🎵</span>
+            <span class="logo-text">MusicStream</span>
+        </div>
+        <div class="nav-links" id="navLinks">
+            <a href="#" onclick="showPage('home')">Home</a>
+            <a href="#" onclick="showPage('library')">Library</a>
+            <a href="#" onclick="showPage('playlists')">Playlists</a>
+            <a href="#" onclick="showPage('pricing')">Pricing</a>
+        </div>
+        <div class="nav-auth" id="navAuth">
+            <button class="btn-secondary" onclick="showLogin()">Login</button>
+            <button class="btn-primary" onclick="showRegister()">Sign Up</button>
+        </div>
+        <div class="nav-user" id="navUser" style="display:none;">
+            <span id="userName"></span>
+            <button class="btn-secondary" onclick="logout()">Logout</button>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="container">
+    <!-- Home Page -->
+    <div id="homePage" class="page active">
+        <div class="hero">
+            <h1>Millions of Songs.<br>Zero Ads.</h1>
+            <p>Stream your favorite music, create playlists, and discover new artists.</p>
+            <button class="btn-large" onclick="showRegister()">Start Free Trial</button>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">🎧</div>
+                <h3>High Quality Audio</h3>
+                <p>Stream in up to 320kbps quality</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📱</div>
+                <h3>Mobile Ready</h3>
+                <p>Listen on any device</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🎵</div>
+                <h3>Massive Library</h3>
+                <p>Millions of songs available</p>
+            </div>
+        </div>
+
+        <div id="recommendationsSection" class="section">
+            <h2>Recommended for You</h2>
+            <div id="recommendationsGrid" class="tracks-grid"></div>
+        </div>
+    </div>
+
+    <!-- Library Page -->
+    <div id="libraryPage" class="page">
+        <div class="page-header">
+            <h2>Your Music Library</h2>
+            <button class="btn-primary" onclick="showUploadModal()">Upload Track</button>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search tracks, artists, albums..." onkeyup="searchTracks()">
+            <button onclick="searchTracks()">Search</button>
+        </div>
+
+        <div id="tracksGrid" class="tracks-grid"></div>
+        <div id="pagination" class="pagination"></div>
+    </div>
+
+    <!-- Playlists Page -->
+    <div id="playlistsPage" class="page">
+        <div class="page-header">
+            <h2>Your Playlists</h2>
+            <button class="btn-primary" onclick="showCreatePlaylistModal()">New Playlist</button>
+        </div>
+        <div id="playlistsGrid" class="playlists-grid"></div>
+    </div>
+
+    <!-- Pricing Page -->
+    <div id="pricingPage" class="page">
+        <h2 class="pricing-title">Choose Your Plan</h2>
+        <div id="pricingGrid" class="pricing-grid"></div>
+    </div>
+</main>
+
+<!-- Modals -->
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('loginModal')">&times;</span>
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email" class="modal-input">
+        <input type="password" id="loginPassword" placeholder="Password" class="modal-input">
+        <button class="btn-primary" onclick="login()">Login</button>
+        <p class="modal-footer">Don't have an account? <a href="#" onclick="showRegister();closeModal('loginModal')">Sign up</a></p>
+    </div>
+</div>
+
+<div id="registerModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('registerModal')">&times;</span>
+        <h2>Create Account</h2>
+        <input type="text" id="regUsername" placeholder="Username" class="modal-input">
+        <input type="email" id="regEmail" placeholder="Email" class="modal-input">
+        <input type="password" id="regPassword" placeholder="Password" class="modal-input">
+        <button class="btn-primary" onclick="register()">Sign Up</button>
+        <p class="modal-footer">Already have an account? <a href="#" onclick="showLogin();closeModal('registerModal')">Login</a></p>
+    </div>
+</div>
+
+<div id="uploadModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('uploadModal')">&times;</span>
+        <h2>Upload Track</h2>
+        <input type="text" id="trackTitle" placeholder="Title" class="modal-input">
+        <input type="text" id="trackArtist" placeholder="Artist" class="modal-input">
+        <input type="text" id="trackAlbum" placeholder="Album" class="modal-input">
+        <select id="trackGenre" class="modal-input">
+            <option value="pop">Pop</option>
+            <option value="rock">Rock</option>
+            <option value="hiphop">Hip Hop</option>
+            <option value="electronic">Electronic</option>
+            <option value="jazz">Jazz</option>
+            <option value="classical">Classical</option>
+        </select>
+        <input type="file" id="trackFile" accept="audio/*" class="modal-input">
+        <button class="btn-primary" onclick="uploadTrack()">Upload</button>
+    </div>
+</div>
+
+<div id="playlistModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('playlistModal')">&times;</span>
+        <h2>Create Playlist</h2>
+        <input type="text" id="playlistName" placeholder="Playlist Name" class="modal-input">
+        <textarea id="playlistDesc" placeholder="Description" class="modal-input"></textarea>
+        <label>
+            <input type="checkbox" id="playlistPublic"> Make Public
+        </label>
+        <button class="btn-primary" onclick="createPlaylist()">Create</button>
+    </div>
+</div>
+
+<div id="addToPlaylistModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('addToPlaylistModal')">&times;</span>
+        <h2>Add to Playlist</h2>
+        <select id="playlistSelect" class="modal-input"></select>
+        <button class="btn-primary" onclick="addToSelectedPlaylist()">Add</button>
+    </div>
+</div>
+
+<div id="subscriptionModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('subscriptionModal')">&times;</span>
+        <h2>Subscribe</h2>
+        <div id="planDetails"></div>
+        <input type="text" id="cardNumber" placeholder="Card Number" class="modal-input">
+        <input type="text" id="cardExpiry" placeholder="MM/YY" class="modal-input">
+        <input type="text" id="cardCvv" placeholder="CVV" class="modal-input">
+        <button class="btn-primary" onclick="processSubscription()">Subscribe</button>
+    </div>
+</div>
+
+<!-- Audio Player -->
+<div id="audioPlayer" class="audio-player" style="display:none;">
+    <div class="player-controls">
+        <button onclick="togglePlay()">⏯️</button>
+        <span id="currentTrack"></span>
+        <input type="range" id="progressBar" value="0">
+        <span id="timeDisplay">0:00 / 0:00</span>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

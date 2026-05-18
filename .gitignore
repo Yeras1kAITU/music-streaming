@@ -1,0 +1,74 @@
+# Dependencies
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.egg-info/
+.Python/
+.pytest_cache/
+.mypy_cache/
+.tox/
+
+# Build artifacts
+dist/
+build/
+target/
+.out/
+*.class
+*.pyc
+*.o
+*.obj
+*.so
+*.dll
+*.exe
+
+# Environment files
+.env
+.env.local
+.env.*
+
+# Logs
+*.log
+logs/
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
+
+grafana-dashboard.json

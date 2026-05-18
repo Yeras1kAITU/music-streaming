@@ -1,0 +1,152 @@
+syntax = "proto3";
+
+package payment;
+option go_package = "github.com/music-streaming/proto/payment";
+
+service PaymentService {
+  rpc CreateSubscription(CreateSubscriptionRequest) returns (Subscription);
+  rpc CancelSubscription(CancelSubscriptionRequest) returns (CancelSubscriptionResponse);
+  rpc GetSubscription(GetSubscriptionRequest) returns (Subscription);
+  rpc ProcessPayment(ProcessPaymentRequest) returns (ProcessPaymentResponse);
+  rpc GetPaymentHistory(GetPaymentHistoryRequest) returns (PaymentHistoryResponse);
+  rpc ApplyCoupon(ApplyCouponRequest) returns (ApplyCouponResponse);
+  rpc GetInvoice(GetInvoiceRequest) returns (Invoice);
+  rpc GetPricingPlans(GetPricingPlansRequest) returns (GetPricingPlansResponse);
+  rpc UpdatePaymentMethod(UpdatePaymentMethodRequest) returns (UpdatePaymentMethodResponse);
+  rpc GetPaymentMethod(GetPaymentMethodRequest) returns (PaymentMethod);
+}
+
+message CreateSubscriptionRequest {
+  string user_id = 1;
+  string plan_id = 2;
+  string payment_method_id = 3;
+}
+
+message Subscription {
+  string id = 1;
+  string user_id = 2;
+  string plan_id = 3;
+  string plan_name = 4;
+  string status = 5;
+  int64 start_date = 6;
+  int64 end_date = 7;
+  double price = 8;
+  string currency = 9;
+}
+
+message CancelSubscriptionRequest {
+  string subscription_id = 1;
+  string user_id = 2;
+}
+
+message CancelSubscriptionResponse {
+  string message = 1;
+}
+
+message GetSubscriptionRequest {
+  string user_id = 1;
+}
+
+message ProcessPaymentRequest {
+  string user_id = 1;
+  double amount = 2;
+  string currency = 3;
+  string payment_method_id = 4;
+  string description = 5;
+}
+
+message ProcessPaymentResponse {
+  string transaction_id = 1;
+  bool success = 2;
+  string message = 3;
+  string receipt_url = 4;
+}
+
+message GetPaymentHistoryRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+message PaymentHistoryResponse {
+  repeated PaymentTransaction transactions = 1;
+  int32 total = 2;
+}
+
+message PaymentTransaction {
+  string id = 1;
+  string user_id = 2;
+  double amount = 3;
+  string currency = 4;
+  string status = 5;
+  string description = 6;
+  int64 created_at = 7;
+  string receipt_url = 8;
+}
+
+message ApplyCouponRequest {
+  string user_id = 1;
+  string coupon_code = 2;
+}
+
+message ApplyCouponResponse {
+  double discount = 1;
+  string message = 2;
+  double new_total = 3;
+}
+
+message GetInvoiceRequest {
+  string transaction_id = 1;
+  string user_id = 2;
+}
+
+message Invoice {
+  string invoice_id = 1;
+  string user_id = 2;
+  double amount = 3;
+  string currency = 4;
+  string pdf_url = 5;
+  string status = 6;
+  int64 issued_at = 7;
+}
+
+message GetPricingPlansRequest {}
+
+message GetPricingPlansResponse {
+  repeated PricingPlan plans = 1;
+}
+
+message PricingPlan {
+  string id = 1;
+  string name = 2;
+  double price = 3;
+  string currency = 4;
+  string interval = 5;
+  int32 quality = 6;
+  bool offline_mode = 7;
+}
+
+message UpdatePaymentMethodRequest {
+  string user_id = 1;
+  string payment_method_id = 2;
+  string card_number = 3;
+  string card_expiry = 4;
+  string card_cvv = 5;
+}
+
+message UpdatePaymentMethodResponse {
+  string payment_method_id = 1;
+  string message = 2;
+}
+
+message GetPaymentMethodRequest {
+  string user_id = 1;
+}
+
+message PaymentMethod {
+  string id = 1;
+  string last4 = 2;
+  string card_type = 3;
+  string expiry_month = 4;
+  string expiry_year = 5;
+}
